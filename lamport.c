@@ -23,7 +23,7 @@ void LamportQueue_init(struct LamportQueue *queue)
 bool LamportQueue_push(struct LamportQueue *queue, T elem)
 {
     size_t b, f;
-    b = atomic_load_explicit(&queue->back_, memory_order_seq_cst);
+    b = atomic_load_explicit(&queue->back_, memory_order_relaxed);
     f = atomic_load_explicit(&queue->front_, memory_order_seq_cst);
     if ((b + 1) % SIZE == f)
     {
@@ -39,7 +39,7 @@ bool LamportQueue_push(struct LamportQueue *queue, T elem)
 bool LamportQueue_pop(struct LamportQueue *queue, T *elem)
 {
     size_t b, f;
-    f = atomic_load_explicit(&queue->front_, memory_order_seq_cst);
+    f = atomic_load_explicit(&queue->front_, memory_order_relaxed);
     b = atomic_load_explicit(&queue->back_, memory_order_seq_cst);
     if (b == f)
     {
