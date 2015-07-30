@@ -24,7 +24,7 @@ bool LamportQueue_push(struct LamportQueue *queue, T elem)
 {
     size_t b, f;
     b = atomic_load_explicit(&queue->back_, memory_order_relaxed);
-    f = atomic_load_explicit(&queue->front_, memory_order_seq_cst);
+    f = atomic_load_explicit(&queue->front_, memory_order_acquire);
     if ((b + 1) % SIZE == f)
     {
         return false;
@@ -32,7 +32,7 @@ bool LamportQueue_push(struct LamportQueue *queue, T elem)
     else
     { /* not full */ }
     queue->data_[b] = elem;
-    atomic_store_explicit(&queue->back_, (b + 1) % SIZE, memory_order_seq_cst);
+    atomic_store_explicit(&queue->back_, (b + 1) % SIZE, memory_order_release);
     return true;
 }
 
@@ -40,7 +40,7 @@ bool LamportQueue_pop(struct LamportQueue *queue, T *elem)
 {
     size_t b, f;
     f = atomic_load_explicit(&queue->front_, memory_order_relaxed);
-    b = atomic_load_explicit(&queue->back_, memory_order_seq_cst);
+    b = atomic_load_explicit(&queue->back_, memory_order_acquire);
     if (b == f)
     {
         return false;
@@ -48,7 +48,7 @@ bool LamportQueue_pop(struct LamportQueue *queue, T *elem)
     else
     { /* not empty */ }
     *elem = queue->data_[f];
-    atomic_store_explicit(&queue->front_, (f + 1) % SIZE, memory_order_seq_cst);
+    atomic_store_explicit(&queue->front_, (f + 1) % SIZE, memory_order_release);
     return true;
 }
 
